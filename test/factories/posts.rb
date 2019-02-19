@@ -1,7 +1,7 @@
 FactoryBot.define do
   factory :post do
-    title { "MyString" }
-    text { "MyText" }
-    author { nil }
+    title { "Some Title" }
+    text { "And the text to go with it" }
+    author 
   end
 end

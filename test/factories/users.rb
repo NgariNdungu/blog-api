@@ -1,5 +1,5 @@
 FactoryBot.define do
-  factory :user do
+  factory :user, aliases: [:author, :commenter] do
     username { "some guy" }
     password { "superstrongpassword" }
     full_name { "but of course guy" }
