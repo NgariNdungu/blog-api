@@ -47,3 +47,8 @@ gem 'tzinfo-data', platforms: [:mingw, :mswin, :x64_mingw, :jruby]
 
 
 gem "pry-rails", "~> 0.3.9", :group => :development
+
+# json:api serializers
+# gem 'jsonapi-rails'
+# gem 'fast_jsonapi'
+# gem 'active_model_serializers', '~> 0.10.0'
