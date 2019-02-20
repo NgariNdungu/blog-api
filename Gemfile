@@ -51,4 +51,4 @@ gem "pry-rails", "~> 0.3.9", :group => :development
 # json:api serializers
 # gem 'jsonapi-rails'
 # gem 'fast_jsonapi'
-# gem 'active_model_serializers', '~> 0.10.0'
+gem 'active_model_serializers', '~> 0.10.0'
