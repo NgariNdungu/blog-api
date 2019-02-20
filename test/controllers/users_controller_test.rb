@@ -14,4 +14,12 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
     post users_url, params: invalid_params
     assert_match /errors/, @response.body, "Did not return errors"
   end
+
+  test 'should delete user' do
+    flunk "User deletion not implemented"
+  end
+
+  test 'should authenticate a valid user' do
+    flunk "User authentication not implemented"
+  end
 end
