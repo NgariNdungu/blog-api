@@ -24,13 +24,13 @@ paths:
                   
       responses:
         '201':
-          description: User successfully created
+          description: Created
           content:
             application/vnd.api+json:
               schema:
                 $ref: '#/components/schemas/UserResponse'
         '400':
-          description: Invalid registration credentials
+          description: Invalid input
           content:
             application/vnd.api+json:
               schema:
@@ -41,26 +41,22 @@ paths:
                     title: Bad request
                     detail: "missing parameter in request"
 
-  /blogs:
+  /posts:
     get:
-      summary: Gets a list of all blogs
+      summary: Gets a list of all posts
       responses:
         '200':
-          description: A list of hashes containing the blog id as the key and the title as the value
+          description: OK
           content:
             application/vnd.api+json:
               schema:
-                oneOf:
-                  - $ref: '#/components/schemas/BlogItems'
-                  - $ref: '#/components/schemas/404List'
-              example:
-                data:
-                  - type: blog
-                    id: 1
-                    attributes:
-                      title: first blog
-                      text: some text
-                      author_id: "1"
+                $ref: '#/components/schemas/PostItems'
+        '404':
+          description: Not found
+          content:
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/404List'
       
               
     post:
@@ -72,42 +68,51 @@ paths:
         content:
           application/vnd.api+json:
             schema:
-              type: object
-              properties:
-                data:
-                  type: object
-                  properties:
-                    type:
-                      type: string
-                      example: blog
-                    attributes:
-                      type: object
-                      properties:
-                        title:
-                          type: string
-                          example: quite the title
-                        text:
-                          type: string
-                          example: and some text
+              $ref: '#/components/schemas/PostItem'
+            example:
+              data:
+                type: "post"
+                attributes:
+                  title: quite the title
+                  text: and some text
             
       responses:
         '201':
           description: Created
-        '401':
-          description: Unauthorized
-      
-  /blogs/{blogId}:
-    get:
-      summary: Returns a single blog by ID
-      parameters:
-        - $ref: '#/components/parameters/BlogId'
-      responses:
-        '200':
-          description: Blog object
           content:
             application/vnd.api+json:
               schema:
-                $ref: '#/components/schemas/SingleBlogResponse'
+                $ref: '#/components/schemas/SinglePostResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '400':
+          description: Invalid input
+          content:
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                errors:
+                  - status: "400"
+                    title: Bad request
+                    detail: "missing parameter in request"
+      
+  /posts/{postId}:
+    get:
+      summary: Returns a single post by ID
+      parameters:
+        - $ref: '#/components/parameters/PostId'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/SinglePostResponse'
         '404':
           description: Not found
           content:
@@ -120,29 +125,37 @@ paths:
       security:
         - BasicAuth: []
       parameters:
-        - $ref: '#/components/parameters/BlogId'
+        - $ref: '#/components/parameters/PostId'
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              type: object
-              properties:
-                title:
-                  type: string
-                text:
-                  type: string
+              $ref: '#/components/schemas/PostItem'
       responses:
         '200':
-          description: Updated
+          description: OK
           content:
             application/vnd.api+json:
               schema:
-                $ref: '#/components/schemas/SingleBlogResponse'
+                $ref: '#/components/schemas/SinglePostResponse'
         '404':
           description: Not found
+          content:
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/404'
         '400':
           description: Invalid input
+          content:
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                errors:
+                  - status: "400"
+                    title: Bad request
+                    detail: "missing parameter in request"
         '401':
           description: Unauthorized
           content:
@@ -155,12 +168,16 @@ paths:
       security:
         - BasicAuth: []
       parameters:
-        - $ref: '#/components/parameters/BlogId'
+        - $ref: '#/components/parameters/PostId'
       responses:
         '204':
           description: Deleted
         '404':
           description: Not found
+          content:
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/404'
         '401':
           description: Unauthorized
           content:
@@ -168,30 +185,30 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
           
-  /blogs/{blogId}/comments:
+  /posts/{postId}/comments:
     get:
       summary: Get a list of comments associated with a single post
       parameters:
-        - $ref: '#/components/parameters/BlogId'
+        - $ref: '#/components/parameters/PostId'
       responses:
         '200':
-          description: Returns an array of comments
+          description: OK
           content:
             application/vnd.api+json:
               schema:
                 $ref: '#/components/schemas/CommentItems'
         '404':
-          description: No comments for that blog
+          description: Not found
           content:
             application/vnd.api+json:
               schema:
                 $ref: '#/components/schemas/404List'
     post:
-      summary: Post a comment to a blog
+      summary: Post a comment to a post
       security:
         - BasicAuth: []
       parameters:
-        - $ref: '#/components/parameters/BlogId'
+        - $ref: '#/components/parameters/PostId'
       requestBody:
         required: true
         content:
@@ -213,7 +230,7 @@ paths:
                           example: first comment
       responses:
         '201':
-          description: Comment added
+          description: Created
           content:
             application/vnd.api+json:
               schema:
@@ -225,15 +242,15 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
           
-  /blogs/{blogId}/comments/{commentId}:
+  /posts/{postId}/comments/{commentId}:
     get:
       summary: Get a comment by ID
       parameters:
-        - $ref: '#/components/parameters/BlogId'
+        - $ref: '#/components/parameters/PostId'
         - $ref: '#/components/parameters/CommentId'
       responses:
         '200':
-          description: Returns a comment object
+          description: OK
           content:
             application/vnd.api+json:
               schema:
@@ -250,13 +267,17 @@ paths:
       security:
         - BasicAuth: []
       parameters:
-        - $ref: '#/components/parameters/BlogId'
+        - $ref: '#/components/parameters/PostId'
         - $ref: '#/components/parameters/CommentId'
       responses:
         '204':
           description: Deleted
         '404':
           description: Not found
+          content:
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/404'
         '401':
           description: Unauthorized
           content:
@@ -271,7 +292,7 @@ components:
       scheme: basic
       
   schemas:
-    Blog:
+    Post:
       type: object
       properties:
         title:
@@ -286,20 +307,20 @@ components:
         - title
         - text
     
-    BlogItems:
+    PostItems:
       type: object
       properties:
         data:
           type: array
           items:
-            $ref: '#/components/schemas/BlogItem'
+            $ref: '#/components/schemas/PostItem'
             
-    BlogItem:
+    PostItem:
       type: object
       properties:
         type:
           type: string
-          example: blog
+          example: post
         id:
           type: string
           example: "1"
@@ -308,7 +329,7 @@ components:
           properties:
             title:
               type: string
-              example: "First blog"
+              example: "First post"
             text:
               type: string
               example: with some text
@@ -316,11 +337,11 @@ components:
               type: string
               example: "2003"
               
-    SingleBlogResponse:
+    SinglePostResponse:
       type: object
       properties:
         data:
-          $ref: '#/components/schemas/BlogItem'
+          $ref: '#/components/schemas/PostItem'
     User:
       type: object
       properties:
@@ -347,7 +368,7 @@ components:
           type: string
         body:
           type: string
-        blog_id:
+        post_id:
           type: integer
           
     CommentItem:
@@ -368,7 +389,7 @@ components:
             body:
               type: string
               example: first comment
-            blog_id:
+            post_id:
               type: string
               example: "1"
               
@@ -466,8 +487,8 @@ components:
             type: object
 
   parameters:
-    BlogId:
-      name: blogId
+    PostId:
+      name: postId
       in: path
       required: true
       schema:
