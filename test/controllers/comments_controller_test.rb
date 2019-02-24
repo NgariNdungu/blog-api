@@ -3,12 +3,17 @@ require 'test_helper'
 class CommentsControllerTest < ActionDispatch::IntegrationTest
   def setup
     @comment = create(:comment)
+    @auth = ActionController::HttpAuthentication::Basic.encode_credentials(
+      @comment.commenter.username,
+      attributes_for(:user)[:password]
+    )
   end
 
   # TODO: remove user_id from params
   test 'should create a comment' do
     assert_difference('Comment.count') do
-      post post_comments_url(@comment.post), params: attributes_for(:comment, user_id: @comment.commenter.id)
+      post post_comments_url(@comment.post), params: attributes_for(:comment),
+        headers: {"Authorization": @auth}
     end
     assert_response :created, "Returns an incorrect response code"
     assert_match /data/, @response.body, "Does not return created comment"
@@ -16,7 +21,8 @@ class CommentsControllerTest < ActionDispatch::IntegrationTest
 
   test 'should not create comment without a body' do
     assert_no_difference('Comment.count') do
-      post post_comments_url(@comment.post), params: attributes_for(:empty_comment, post: @comment.post)
+      post post_comments_url(@comment.post), params: attributes_for(:empty_comment),
+        headers: {"Authorization": @auth}
     end
     assert_response :bad_request, "Does not raise error for an empty comment"
   end

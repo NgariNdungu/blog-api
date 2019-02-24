@@ -25,6 +25,7 @@ class PostsController < ApplicationController
     end
   end
 
+  # TODO: handle case when user is not the author
   def update
     if @post.update(post_params)
       render json: @post

@@ -1,6 +1,10 @@
 class CommentsController < ApplicationController
+  include Authenticable
+
   before_action :set_post
   before_action :set_comment, only: [:show, :destroy]
+  before_action :set_commenter, only: [:create, :destroy]
+
   def index
     @comments = @post.comments
     render json: @comments, each_serializer: CommentSerializer
@@ -15,7 +19,7 @@ class CommentsController < ApplicationController
   end
 
   def create
-    @comment = @post.comments.new(comment_params) 
+    @comment = @commenter.comments.new(comment_params)
     if @comment.save
       render json: @comment, status: :created
     else
@@ -23,6 +27,7 @@ class CommentsController < ApplicationController
     end
   end
 
+  # TODO: only the commenter should be able to delete comment
   def destroy
      if @comment && @comment.destroy
        render status: :no_content
@@ -40,7 +45,11 @@ class CommentsController < ApplicationController
     @comment = Comment.find_by(id: params[:id])
   end
 
+  def set_commenter
+    @commenter = set_user
+  end
+
   def comment_params
-    params.permit(:post_id, :user_id, :body)
+    params.permit(:post_id, :body)
   end
 end
