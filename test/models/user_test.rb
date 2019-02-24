@@ -24,7 +24,7 @@ class UserTest < ActiveSupport::TestCase
   test 'should not save user with duplicate username' do
     create(:user)
     assert_raises(ActiveRecord::RecordInvalid) do
-      create(:user)
+      create(:user, username: User.last.username)
     end
   end
 end

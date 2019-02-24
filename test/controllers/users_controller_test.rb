@@ -15,10 +15,6 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
     assert_match /errors/, @response.body, "Did not return errors"
   end
 
-  test 'should delete user' do
-    flunk "User deletion not implemented"
-  end
-
   test 'should authenticate a valid user' do
     flunk "User authentication not implemented"
   end

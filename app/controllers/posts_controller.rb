@@ -1,6 +1,7 @@
 class PostsController < ApplicationController
+  include Authenticable
   before_action :set_post, only: [:update, :show, :destroy]
-  before_action :set_author, only: :create
+  before_action :set_author, except: [:index, :show]
 
   def index
     @posts = Post.all # TODO: handle pagination
@@ -50,7 +51,6 @@ class PostsController < ApplicationController
   end
 
   def set_author
-    # TODO set author to current user
-    @author = User.find_by(id: params[:user_id])
+    @author = set_user
   end
 end
