@@ -1,5 +1,6 @@
 class CommentsController < ApplicationController
   include Authenticable
+  require_relative 'decorators/errors_decorator'
 
   before_action :set_post
   before_action :set_comment, only: [:show, :destroy]
@@ -14,7 +15,7 @@ class CommentsController < ApplicationController
     if @comment
       render json: @comment
     else
-      render json: {:data => nil}, status: :not_found
+      render json: SerializedError.new(@comment).not_found, status: :not_found
     end
   end
 
@@ -23,17 +24,21 @@ class CommentsController < ApplicationController
     if @comment.save
       render json: @comment, status: :created
     else
-      render json: {:errors => @comment.errors.messages}, status: :bad_request
+      render json: SerializedError.new(@comment.errors).bad_request, status: :bad_request
     end
   end
 
   # TODO: only the commenter should be able to delete comment
   def destroy
-     if @comment && @comment.destroy
-       render status: :no_content
-     else
-       render json: {:data => nil}, status: :not_found
-     end
+    if @comment.commenter == @commenter
+      if @comment && @comment.destroy
+        render status: :no_content
+      else
+        render json: SerializedError.new(@comment.errors).not_found, status: :not_found
+      end
+    else
+      render json: SerializedError.new(@comment.errors).unauthorized, status: :unauthorized
+    end
   end
 
   private
@@ -47,6 +52,9 @@ class CommentsController < ApplicationController
 
   def set_commenter
     @commenter = set_user
+    if @commenter.nil?
+      render json: SerializedError.new(nil).unauthorized, status: :unauthorized
+    end
   end
 
   def comment_params

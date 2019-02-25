@@ -5,7 +5,7 @@ module Authenticable
     if has_basic_credentials?(request)
       username,password = user_name_and_password(request)
       user = User.find_by(username: username)
-      if user.authenticate(password)
+      if user && user.authenticate(password)
         @user = user
       end
     else

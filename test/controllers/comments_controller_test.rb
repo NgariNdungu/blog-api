@@ -9,7 +9,6 @@ class CommentsControllerTest < ActionDispatch::IntegrationTest
     )
   end
 
-  # TODO: remove user_id from params
   test 'should create a comment' do
     assert_difference('Comment.count') do
       post post_comments_url(@comment.post), params: attributes_for(:comment),
@@ -25,13 +24,27 @@ class CommentsControllerTest < ActionDispatch::IntegrationTest
         headers: {"Authorization": @auth}
     end
     assert_response :bad_request, "Does not raise error for an empty comment"
+    assert_match /errors/, @response.body, "Does not return errors on 400"
   end
 
   test 'should delete comment' do
     assert_difference('Comment.count', -1) do
-      delete post_comment_url(@comment.post, @comment)
+      delete post_comment_url(@comment.post, @comment),
+        headers: {"Authorization": @auth}
     end
     assert_response :no_content, "Fails to delete comment"
+  end
+
+  test 'only commenter should delete comment' do
+    auth = ActionController::HttpAuthentication::Basic.encode_credentials(
+      User.first.username,
+      attributes_for(:commenter)[:password]
+    )
+    assert_no_difference('Comment.count') do
+      delete post_comment_url(@comment.post, @comment),
+        headers: {"Authorization":auth}
+    end
+    assert_response :unauthorized, "User other than commenter can delete comment"
   end
 
   test 'should return a list of comments' do
@@ -50,5 +63,10 @@ class CommentsControllerTest < ActionDispatch::IntegrationTest
     get post_comment_url(id: 0, post_id: @comment.post.id)
     assert_response :not_found, "Does not return 404 on missing comment"
     assert_match /null/, @response.body, "Does not return empty data on 404"
+  end
+
+  test 'should return 401' do
+    post post_comments_url(@comment.post)
+    assert_response :unauthorized, "Does return 401 for missing credentials"
   end
 end
