@@ -1,5 +1,7 @@
 class PostsController < ApplicationController
   include Authenticable
+  require_relative 'decorators/errors_decorator'
+
   before_action :set_post, only: [:update, :show, :destroy]
   before_action :set_author, except: [:index, :show]
 
@@ -12,7 +14,7 @@ class PostsController < ApplicationController
     if @post
       render json: @post
     else
-      render json: {:data => nil}, status: :not_found
+      render json: SerializedError.new(nil).not_found , status: :not_found
     end
   end
 
@@ -21,24 +23,27 @@ class PostsController < ApplicationController
     if @post.save
       render json: @post
     else
-      render json: {:errors => @post.errors.messages}, status: :bad_request
+      render json: SerializedError.new(@post.errors).unauthorized, status: :bad_request
     end
   end
 
-  # TODO: handle case when user is not the author
   def update
-    if @post.update(post_params)
-      render json: @post
-    else
-      render json: {:errors => @post.errors.messages}, status: :bad_request
+    if is_author?
+      if @post.update(post_params)
+        render json: @post
+      else
+        render json: SerializedError.new(@post.errors).unauthorized, status: :bad_request
+      end
     end
   end
 
   def destroy
-    if !@post.nil? && @post.destroy
-      render status: :no_content
-    else
-      render status: :not_found
+    if is_author?
+      if !@post.nil? && @post.destroy
+        render status: :no_content
+      else
+        render status: :not_found
+      end
     end
   end
 
@@ -53,5 +58,17 @@ class PostsController < ApplicationController
 
   def set_author
     @author = set_user
+    if @author.nil?
+      render json: SerializedError.new(nil).unauthorized, status: :unauthorized
+    end
+  end
+
+  def is_author?
+    if @post.author == @author
+      true
+    else
+      render json: SerializedError.new(nil).unauthorized, status: :unauthorized
+      false
+    end
   end
 end

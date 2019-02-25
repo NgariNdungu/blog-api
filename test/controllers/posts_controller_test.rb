@@ -23,6 +23,7 @@ class PostsControllerTest < ActionDispatch::IntegrationTest
         headers: {"Authorization": @auth}
     end
     assert_response :bad_request
+    binding.pry
     assert_match /errors/, @response.body, "Does not return errors"
   end
 
@@ -63,6 +64,25 @@ class PostsControllerTest < ActionDispatch::IntegrationTest
   test 'should return empty data if post does not exist' do
     get post_url(1)
     assert_response :not_found
-    assert_match /null/, @response.body, "Does not return null on 404"
+    assert_match /(data)+.*null/, @response.body, "Does not return null on 404"
+  end
+
+  test 'should return 401 for missing credentials' do
+    post posts_url, params: attributes_for(:post)
+    assert_response :unauthorized, "Does not return 401 for missing credentials"
+  end
+
+  test 'only author should alter post' do
+    auth = ActionController::HttpAuthentication::Basic.encode_credentials(
+      create(:user).username,
+      attributes_for(:author)[:password]
+    )
+    patch post_url(@post), params: attributes_for(:post, title: "updated title"),
+        headers: {"Authorization": auth}
+    assert_response :unauthorized, "Allows any user to edit a post"
+
+    delete post_url(@post),
+      headers: {"Authorization": auth}
+    assert_response :unauthorized, "Allows any user to delete a post"
   end
 end

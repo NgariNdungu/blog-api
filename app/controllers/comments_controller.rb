@@ -28,7 +28,6 @@ class CommentsController < ApplicationController
     end
   end
 
-  # TODO: only the commenter should be able to delete comment
   def destroy
     if @comment.commenter == @commenter
       if @comment && @comment.destroy
