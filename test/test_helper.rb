@@ -12,4 +12,12 @@ class ActiveSupport::TestCase
   include FactoryBot::Syntax::Methods
 
   # Add more helper methods to be used by all tests here...
+  def request_params(type, attributes)
+    params = {:data => 
+              {
+                :type => type,
+                :attributes => attributes
+              }
+             }
+  end
 end
