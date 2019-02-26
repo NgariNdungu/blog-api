@@ -11,7 +11,7 @@ class CommentsControllerTest < ActionDispatch::IntegrationTest
 
   test 'should create a comment' do
     assert_difference('Comment.count') do
-      post post_comments_url(@comment.post), params: attributes_for(:comment),
+      post post_comments_url(@comment.post), params: request_params("comment", attributes_for(:comment)),
         headers: {"Authorization": @auth}
     end
     assert_response :created, "Returns an incorrect response code"
@@ -20,7 +20,7 @@ class CommentsControllerTest < ActionDispatch::IntegrationTest
 
   test 'should not create comment without a body' do
     assert_no_difference('Comment.count') do
-      post post_comments_url(@comment.post), params: attributes_for(:empty_comment),
+      post post_comments_url(@comment.post), params: request_params("comment", attributes_for(:empty_comment)),
         headers: {"Authorization": @auth}
     end
     assert_response :bad_request, "Does not raise error for an empty comment"

@@ -20,7 +20,8 @@ class CommentsController < ApplicationController
   end
 
   def create
-    @comment = @commenter.comments.new(comment_params)
+    @comment = @post.comments.new(comment_params[:attributes])
+    @comment.commenter = @commenter
     if @comment.save
       render json: @comment, status: :created
     else
@@ -57,6 +58,8 @@ class CommentsController < ApplicationController
   end
 
   def comment_params
-    params.permit(:post_id, :body)
+    params.require(:data).permit(:type, attributes: {}).tap do |commentParams|
+      commentParams.require([:attributes, :type])[0].permit(:body)
+    end
   end
 end
