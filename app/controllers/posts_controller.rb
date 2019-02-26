@@ -39,7 +39,7 @@ class PostsController < ApplicationController
 
   def destroy
     if is_author?
-      if !@post.nil? && @post.destroy
+      if @post.destroy
         render status: :no_content
       else
         render status: :not_found
@@ -49,6 +49,7 @@ class PostsController < ApplicationController
 
   private
   def post_params
+    # TODO: handle actioncontroller errors on missing params
     params.require(:data).permit(:type, attributes: {}).tap do |postParams|
       postParams.require([:attributes, :type])[0].permit(:title, :text, :user_id)
     end
@@ -56,6 +57,9 @@ class PostsController < ApplicationController
 
   def set_post
     @post = Post.find_by(id: params[:id])
+    if @post.nil?
+      render json: SerializedError.new(nil).not_found, status: :not_found
+    end
   end
 
   def set_author

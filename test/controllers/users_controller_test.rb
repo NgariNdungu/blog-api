@@ -4,7 +4,7 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
   test 'should create user' do
     assert_difference('User.count') do
       post users_url, params: request_params("user", attributes_for(:user)),
-        headers: {"Accept": "application/json"}
+        headers: {"Accept": "application/vnd.api+json"}
     end
     assert_match /data/, @response.body, "Did not return created object"
   end

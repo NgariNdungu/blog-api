@@ -20,6 +20,7 @@ class CommentsController < ApplicationController
   end
 
   def create
+    # TODO: Handle case when post is nil
     @comment = @post.comments.new(comment_params[:attributes])
     @comment.commenter = @commenter
     if @comment.save
@@ -44,10 +45,16 @@ class CommentsController < ApplicationController
   private
   def set_post
     @post = Post.find_by(id: params[:post_id])
+    if @post.nil?
+      render json: SerializedError.new(nil).not_found, status: :not_found
+    end
   end
 
   def set_comment
     @comment = Comment.find_by(id: params[:id])
+    if @comment.nil?
+      render json: SerializedError.new(nil).not_found, status: :not_found
+    end
   end
 
   def set_commenter
