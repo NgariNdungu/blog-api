@@ -11,7 +11,7 @@ class PostsControllerTest < ActionDispatch::IntegrationTest
 
   test 'should create and return a post' do
     assert_difference('Post.count', 1, "Did not create post") do
-      post posts_url, params: attributes_for(:post, user_id: @post.user_id),
+      post posts_url, params: request_params("post", attributes_for(:post, user_id: @post.user_id)),
         headers: {"Authorization": @auth}
     end
     assert_match /data/, @response.body, "Does not return created object"
@@ -19,16 +19,15 @@ class PostsControllerTest < ActionDispatch::IntegrationTest
 
   test 'should fail and return errors for invalid data' do
     assert_no_difference('Post.count') do
-      post posts_url, params: attributes_for(:post, title: "", user_id: @post.user_id),
+      post posts_url, params: request_params("post", attributes_for(:post, title: "", user_id: @post.user_id)),
         headers: {"Authorization": @auth}
     end
     assert_response :bad_request
-    binding.pry
     assert_match /errors/, @response.body, "Does not return errors"
   end
 
   test 'should update and return post' do
-    patch post_url(@post), params: attributes_for(:post, title: "updated title"),
+    patch post_url(@post), params: request_params("post", attributes_for(:post, title: "updated title")),
         headers: {"Authorization": @auth}
     @post.reload
     assert_equal "updated title", @post.title, "Does not update post"
@@ -36,7 +35,7 @@ class PostsControllerTest < ActionDispatch::IntegrationTest
   end
 
   test 'should not update post with invalid data' do
-    patch post_url(@post), params: {title: nil},
+    patch post_url(@post), params: request_params("post", {title: nil}),
         headers: {"Authorization": @auth}
     assert_response :bad_request
     assert_match /errors/, @response.body, "Does not return errors"

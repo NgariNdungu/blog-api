@@ -19,7 +19,7 @@ class PostsController < ApplicationController
   end
 
   def create
-    @post = @author.posts.new(post_params)
+    @post = @author.posts.new(post_params[:attributes])
     if @post.save
       render json: @post
     else
@@ -29,7 +29,7 @@ class PostsController < ApplicationController
 
   def update
     if is_author?
-      if @post.update(post_params)
+      if @post.update(post_params[:attributes])
         render json: @post
       else
         render json: SerializedError.new(@post.errors).unauthorized, status: :bad_request
@@ -49,7 +49,9 @@ class PostsController < ApplicationController
 
   private
   def post_params
-    params.permit(:title, :text, :user_id)
+    params.require(:data).permit(:type, attributes: {}).tap do |postParams|
+      postParams.require([:attributes, :type])[0].permit(:title, :text, :user_id)
+    end
   end
 
   def set_post
