@@ -1,10 +1,11 @@
 class UsersController < ApplicationController
+  require_relative 'decorators/errors_decorator'
   def create
     @user = User.new(user_params[:attributes])    
     if @user.save
       render json: @user
     else
-      render json: {"errors": @user.errors.messages.to_json}, status: :bad_request
+      render json: SerializedError.new(@user.errors).bad_request, status: :bad_request
     end
   end
 
