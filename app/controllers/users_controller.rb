@@ -1,6 +1,6 @@
 class UsersController < ApplicationController
   def create
-    @user = User.new(user_params)    
+    @user = User.new(user_params[:attributes])    
     if @user.save
       render json: @user
     else
@@ -10,6 +10,8 @@ class UsersController < ApplicationController
 
   private
   def user_params
-    params.permit(:username, :full_name, :password)
+    params.require(:data).permit(:type, attributes: {}).tap do |userParams|
+      userParams.require([:attributes, :type])[0].permit(:username, :full_name, :password)
+    end
   end
 end
