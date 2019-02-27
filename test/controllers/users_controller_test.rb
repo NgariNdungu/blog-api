@@ -6,13 +6,13 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
       post users_url, params: request_params("user", attributes_for(:user)),
         headers: {"Accept": "application/vnd.api+json"}
     end
-    assert_match /data/, @response.body, "Did not return created object"
+    assert JSON.parse(response.body)["data"].present?, "Data key must exist"
   end
 
   test 'should return errors if user invalid' do
     invalid_params = request_params("user", attributes_for(:user, username: nil))
     post users_url, params: invalid_params
-    assert_match /errors/, @response.body, "Did not return errors"
+    assert JSON.parse(response.body)["errors"].present?, "Errors key must exist"
   end
 
 end

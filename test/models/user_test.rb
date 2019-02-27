@@ -8,23 +8,24 @@ class UserTest < ActiveSupport::TestCase
   end
 
   test 'should not create user with missing data' do
-    assert_not build(:user, username: "").save, "Saved a user without a username"
-    assert_not build(:user, full_name: "").save, "Saved a user without a name"
-    assert_not build(:user, password: "").save, "Saved a user without a password"
+    user = User.create
+    assert user.invalid?, "Should not save user with missing details"
+    assert user.errors[:username].present?, "Should have error for empty username"
+    assert user.errors[:password].present?, "Should have error for empty password"
+
   end
 
   test 'user should have posts' do
-    assert_respond_to create(:user), :posts, "User doesn't have posts"
+    assert_respond_to create(:user), :posts, "User should have posts"
   end
 
   test 'user should have comments' do
-    assert_respond_to create(:user), :comments, "User can't have comments"
+    assert_respond_to create(:user), :comments, "User should have comments"
   end
 
   test 'should not save user with duplicate username' do
-    create(:user)
-    assert_raises(ActiveRecord::RecordInvalid) do
-      create(:user, username: User.last.username)
-    end
+    user = create(:user)
+    dup_user = User.create(username: user.username, password: "password", full_name: "full name")
+    assert_not dup_user.save, "Should not save user with existing username"
   end
 end

@@ -14,7 +14,7 @@ class PostsControllerTest < ActionDispatch::IntegrationTest
       post posts_url, params: request_params("post", attributes_for(:post, user_id: @post.user_id)),
         headers: {"Authorization": @auth}
     end
-    assert_match /data/, @response.body, "Does not return created object"
+    assert response.parsed_body["data"].present?, "Data key must be present"
   end
 
   test 'should fail and return errors for invalid data' do
@@ -23,22 +23,22 @@ class PostsControllerTest < ActionDispatch::IntegrationTest
         headers: {"Authorization": @auth}
     end
     assert_response :bad_request
-    assert_match /errors/, @response.body, "Does not return errors"
+    assert response.parsed_body["errors"].present?, "Errors key must be present"
   end
 
   test 'should update and return post' do
     patch post_url(@post), params: request_params("post", attributes_for(:post, title: "updated title")),
         headers: {"Authorization": @auth}
     @post.reload
-    assert_equal "updated title", @post.title, "Does not update post"
-    assert_match /data/, @response.body, "Does not return updated post"
+    assert_equal "updated title", @post.title, "Should update post"
+    assert response.parsed_body["data"].present?, "Data key must be present"
   end
 
   test 'should not update post with invalid data' do
     patch post_url(@post), params: request_params("post", {title: nil}),
         headers: {"Authorization": @auth}
     assert_response :bad_request
-    assert_match /errors/, @response.body, "Does not return errors"
+    assert response.parsed_body["errors"], "Errors key must exist"
   end
 
   test 'should delete post' do
@@ -50,13 +50,13 @@ class PostsControllerTest < ActionDispatch::IntegrationTest
 
   test 'should return list of posts' do
     get posts_url
-    assert_response :ok, "Does not return a successful response"
-    assert_match /data/, @response.body, "Does not return list of posts"
+    assert_response :ok, "Should return a successful response"
+    assert response.parsed_body["data"].present?, "Data key must exist"
   end
 
   test 'should return a post' do
     get post_url(@post)
-    assert_response :ok, "Does not return an existing post"
+    assert_response :ok, "Should return an existing post"
     assert_match "#{@post.title}", @response.body, "Returns the wrong post"
   end
 
@@ -68,7 +68,7 @@ class PostsControllerTest < ActionDispatch::IntegrationTest
 
   test 'should return 401 for missing credentials' do
     post posts_url, params: attributes_for(:post)
-    assert_response :unauthorized, "Does not return 401 for missing credentials"
+    assert_response :unauthorized, "Should return 401 for missing credentials"
   end
 
   test 'only author should alter post' do
@@ -78,10 +78,10 @@ class PostsControllerTest < ActionDispatch::IntegrationTest
     )
     patch post_url(@post), params: attributes_for(:post, title: "updated title"),
         headers: {"Authorization": auth}
-    assert_response :unauthorized, "Allows any user to edit a post"
+    assert_response :unauthorized, "Should not allow any user to edit a post"
 
     delete post_url(@post),
       headers: {"Authorization": auth}
-    assert_response :unauthorized, "Allows any user to delete a post"
+    assert_response :unauthorized, "Should not allow any user to delete a post"
   end
 end
